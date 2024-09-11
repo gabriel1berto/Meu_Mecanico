@@ -1,9 +1,8 @@
-import os
 import streamlit as st
 import google.generativeai as genai
 
 # Defina a chave da API diretamente no código
-api_key = "AIzaSyDS60UHapVgSZteCD0-A7UTcsHGFpojRhs"  # Substitua pelo seu valor real da chave da API
+api_key = "aizasyds60uhapvgsztecd0-a7utcshgfpojrhs"  # Substitua pelo seu valor real da chave da API
 
 # Verifique se a chave da API foi configurada corretamente
 if not api_key:
@@ -11,7 +10,11 @@ if not api_key:
     st.stop()  # Para a execução do código
 
 # Configura a API com a chave
-genai.configure(api_key=api_key)  # Passa a chave da API para a configuração
+try:
+    genai.configure(api_key=api_key)  # Passa a chave da API para a configuração
+except Exception as e:
+    st.error(f"Erro ao configurar a API: {e}")
+    st.stop()
 
 # Cria o modelo
 generation_config = {
@@ -29,12 +32,16 @@ safety_settings = [
     {"category": "harm_category_dangerous_content", "threshold": "block_medium_and_above"},
 ]
 
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
-    safety_settings=safety_settings,
-    generation_config=generation_config,
-    system_instruction="pablo é um mecânico com anos de experiência, especialista em manuais de veículos e diagnóstico de problemas comuns. ele combina profundo conhecimento técnico com uma comunicação direta, simples e acessível, explicando de forma sucinta e clara qualquer questão mecânica. além disso, ele sugere soluções práticas. simpático e paciente, pablo gosta de orientar os donos de carros sobre boas práticas de manutenção preventiva, reforçando a importância de cuidar do veículo para evitar problemas futuros.",
-)
+try:
+    model = genai.generativemodel(
+        model_name="gemini-1.5-pro",
+        safety_settings=safety_settings,
+        generation_config=generation_config,
+        system_instruction="pablo é um mecânico com anos de experiência, especialista em manuais de veículos e diagnóstico de problemas comuns. ele combina profundo conhecimento técnico com uma comunicação direta, simples e acessível, explicando de forma sucinta e clara qualquer questão mecânica. além disso, ele sugere soluções práticas. simpático e paciente, pablo gosta de orientar os donos de carros sobre boas práticas de manutenção preventiva, reforçando a importância de cuidar do veículo para evitar problemas futuros.",
+    )
+except Exception as e:
+    st.error(f"Erro ao criar o modelo: {e}")
+    st.stop()
 
 # Inicializa a sessão de chat e o histórico
 if 'chat_session' not in st.session_state:
@@ -59,11 +66,14 @@ if st.button("Enviar"):
         st.session_state.messages.append(f"Você: {user_input}")
 
         # Envia a mensagem do usuário para o chatbot e obtém a resposta
-        response = st.session_state.chat_session.send_message(user_input)
-        model_response = response.text
+        try:
+            response = st.session_state.chat_session.send_message(user_input)
+            model_response = response.text
 
-        # Adiciona a resposta do chatbot à sessão
-        st.session_state.messages.append(f"Chatbot: {model_response}")
+            # Adiciona a resposta do chatbot à sessão
+            st.session_state.messages.append(f"Chatbot: {model_response}")
+        except Exception as e:
+            st.error(f"Erro ao obter a resposta do chatbot: {e}")
 
-        # Limpa o campo de entrada
+        # Cleans the input field
         st.rerun()  # Atualiza a página para mostrar as novas mensagens

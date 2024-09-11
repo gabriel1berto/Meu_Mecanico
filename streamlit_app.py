@@ -1,56 +1,64 @@
+import os
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
+from dotenv import load_dotenv
 
-# Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv()
+
+# Configura a API com a chave
+genai.configure(api_key=os.getenv("gemini_api_key"))
+
+# Cria o modelo
+generation_config = {
+    "temperature": 0.5,
+    "top_p": 0.5,
+    "top_k": 50,
+    "max_output_tokens": 700,
+    "response_mime_type": "text/plain",
+}
+safety_settings = [
+    {"category": "harm_category_harassment", "threshold": "block_none"},
+    {"category": "harm_category_hate_speech", "threshold": "block_medium_and_above"},
+    {"category": "harm_category_sexually_explicit", "threshold": "block_medium_and_above"},
+    {"category": "harm_category_dangerous_content", "threshold": "block_medium_and_above"},
+]
+
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-pro",
+    safety_settings=safety_settings,
+    generation_config=generation_config,
+    system_instruction="Pablo é um mecânico com anos de experiência, especialista em manuais de veículos e diagnóstico de problemas comuns. Ele combina profundo conhecimento técnico com uma comunicação direta, simples e acessível, explicando de forma sucinta e clara qualquer questão mecânica. Além disso, ele sugere soluções práticas. Simpático e paciente, Pablo gosta de orientar os donos de carros sobre boas práticas de manutenção preventiva, reforçando a importância de cuidar do veículo para evitar problemas futuros.",
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+# Inicializa a sessão de chat e o histórico
+if 'chat_session' not in st.session_state:
+    st.session_state.chat_session = model.start_chat(history=[])
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+# Configurando o layout da página
+st.title("Chatbot com Streamlit e Google Generative AI")
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# Exibindo mensagens anteriores
+for msg in st.session_state.messages:
+    st.text(msg)
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# Caixa de entrada para o usuário
+user_input = st.text_input("Você: ", "")
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+# Quando o usuário envia a mensagem
+if st.button("Enviar"):
+    if user_input:
+        # Adiciona a mensagem do usuário à sessão
+        st.session_state.messages.append(f"Você: {user_input}")
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+        # Envia a mensagem do usuário para o chatbot e obtém a resposta
+        response = st.session_state.chat_session.send_message(user_input)
+        model_response = response.text
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
+        # Adiciona a resposta do chatbot à sessão
+        st.session_state.messages.append(f"Chatbot: {model_response}")
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        # Limpa o campo de entrada
+        st.rerun()  # Atualiza a página para mostrar as novas mensagens

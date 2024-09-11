@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # Defina a chave da API diretamente no código
-api_key = "aizasyds60uhapvgsztecd0-a7utcshgfpojrhs"  # Substitua pelo seu valor real da chave da API
+api_key = "AIzaSyDS60UHapVgSZteCD0-A7UTcsHGFpojRhs"  # Substitua pelo seu valor real da chave da API
 
 # Verifique se a chave da API foi configurada corretamente
 if not api_key:

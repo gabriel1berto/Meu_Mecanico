@@ -33,7 +33,7 @@ safety_settings = [
 ]
 
 try:
-    model = genai.generativemodel(
+    model = genai.GenerativeModel(
         model_name="gemini-1.5-pro",
         safety_settings=safety_settings,
         generation_config=generation_config,

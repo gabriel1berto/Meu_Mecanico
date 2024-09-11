@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configura a API com a chave
-genai.configure(api_key=os.getenv("gemini_api_key"))
+api_key = os.getenv(AIzaSyDS60UHapVgSZteCD0-A7UTcsHGFpojRhs)
 
 # Cria o modelo
 generation_config = {

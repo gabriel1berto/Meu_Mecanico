@@ -50,30 +50,37 @@ if 'messages' not in st.session_state:
     st.session_state.messages = []
 
 # Configurando o layout da página
-st.title("Chatbot com Streamlit e Google Generative AI")
+st.title("Carros são o meu negócio, como posso te ajudar?")
 
 # Exibindo mensagens anteriores
-for msg in st.session_state.messages:
-    st.text(msg)
+with st.expander("Histórico de Mensagens", expanded=True):
+    for msg in st.session_state.messages:
+        st.text(msg)
 
-# Caixa de entrada para o usuário
-user_input = st.text_input("Você: ", "")
+# Exibindo mensagens anteriores em um expander
+with st.expander("Histórico de Mensagens", expanded=True):
+    for msg in st.session_state.messages:
+        st.text(msg)
 
-# Quando o usuário envia a mensagem
-if st.button("Enviar"):
-    if user_input:
-        # Adiciona a mensagem do usuário à sessão
-        st.session_state.messages.append(f"Você: {user_input}")
+# Definindo um container para a entrada do usuário
+with st.container():
+    user_input = st.text_input("Você: ", "")
 
-        # Envia a mensagem do usuário para o chatbot e obtém a resposta
-        try:
-            response = st.session_state.chat_session.send_message(user_input)
-            model_response = response.text
+    # botão de envio
+    if st.button("Enviar"):
+        if user_input:
+            # adiciona a mensagem do usuário à sessão
+            st.session_state.messages.append(f"Você: {user_input}")
 
-            # Adiciona a resposta do chatbot à sessão
-            st.session_state.messages.append(f"Chatbot: {model_response}")
-        except Exception as e:
-            st.error(f"Erro ao obter a resposta do chatbot: {e}")
+            # envia a mensagem do usuário para o chatbot e obtém a resposta
+            try:
+                response = st.session_state.chat_session.send_message(user_input)
+                model_response = response.text
 
-        # Cleans the input field
-        st.rerun()  # Atualiza a página para mostrar as novas mensagens
+                # adiciona a resposta do chatbot à sessão
+                st.session_state.messages.append(f"Pablo, meu mecânico: {model_response}")
+            except Exception as e:
+                st.error(f"erro ao obter a resposta do chatbot: {e}")
+
+            # limpa o campo de entrada
+            st.experimental_rerun()  # atualiza a página para mostrar as novas mensagens

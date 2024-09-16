@@ -65,13 +65,14 @@ def save_to_csv(round_number, user_message, bot_response, voto1, voto2):
         "vote 2": [voto2]
     }
 
-    df = pd.DataFrame(data)  # Corrigido de pd.dataframe para pd.DataFrame
+    df = pd.DataFrame(data)  # corrigido para pd.DataFrame
 
     try:
         # salva o dataframe no csv (adicionando aos dados existentes)
-        df.to_csv(file_path, mode='a', header=not os.path.exists(file_path), index=False)  # Corrigido index=false para index=False
-    except Exception as e:  # Corrigido de 'exception' para 'Exception'
+        df.to_csv(file_path, mode='a', header=not os.path.exists(file_path), index=False)  # corrigido para index=False
+    except Exception as e:  # corrigido de 'exception' para 'Exception'
         st.error(f"erro ao salvar os dados no arquivo csv: {e}")
+
 # Layout da página
 st.title("🚗💨 Carros são o meu negócio!")
 
@@ -115,7 +116,7 @@ with col1:
 
                 # Salva as mensagens e os votos no CSV
                 if 'voto' in st.session_state and 'voto2' in st.session_state:
-                    save_to_csv(user_input, model_response, st.session_state.voto, st.session_state.voto2)
+                    save_to_csv(st.session_state.round, user_input, model_response, st.session_state.voto1, st.session_state.voto2)
 
             except Exception as e:
                 error_message = str(e)
@@ -126,8 +127,6 @@ with col1:
                     st.error("Não entendi bem sua pergunta, pode ser um pouco mais específico?")
                 else:
                     st.error(f"Erro desconhecido: {error_message}")
-
-
 
 # coluna à direita para a avaliação (30%)
 with col2:
